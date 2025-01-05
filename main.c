@@ -14,6 +14,7 @@ float asinf(float);
 #include <raymath.h>
 
 #define BALL_RADIUS 100.0
+#define GRAVITY 1000.0
 
 static Vector2 ball_position = {0};
 static Vector2 ball_velocity = {200, 200};
@@ -22,7 +23,10 @@ void next_frame()
 {
     BeginDrawing();
         ClearBackground((Color){18,18,18,255});
-        Vector2 new_ball_position = Vector2Add(ball_position, Vector2Scale(ball_velocity, GetFrameTime()));
+        float dt = GetFrameTime();
+        Vector2 new_ball_position = Vector2Add(ball_position, Vector2Scale(ball_velocity, dt));
+        ball_velocity.y += GRAVITY*dt;
+        ball_velocity.y -= ball_velocity.y * 0.01f;
         if (new_ball_position.x - BALL_RADIUS < 0.0 || new_ball_position.x + BALL_RADIUS >= GetScreenWidth())
         {
             ball_velocity.x *= -1.0f;
