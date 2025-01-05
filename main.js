@@ -9,9 +9,11 @@ let ctx = undefined;
 let dt = undefined;
 
 let doUpdate = true;
+let skipNextUpdate = false;
 
 document.addEventListener("visibilitychange", ()=>{
     doUpdate = !document.hidden;
+    if (!doUpdate) skipNextUpdate = true;
 });
 
 WebAssembly.instantiateStreaming(fetch("main.wasm"), {
@@ -71,7 +73,11 @@ function next(timestamp) {
     dt = (timestamp - previous)*0.001;
     previous = timestamp;
     if (doUpdate){
-        w.instance.exports.next_frame();
+        if (!skipNextUpdate) {
+            w.instance.exports.next_frame();
+        } else {
+            skipNextUpdate = false;
+        }
     }
     window.requestAnimationFrame(next);
 }
