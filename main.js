@@ -8,6 +8,12 @@ let ctx = undefined;
 /** @type {number} */
 let dt = undefined;
 
+let doUpdate = true;
+
+document.addEventListener("visibilitychange", ()=>{
+    doUpdate = !document.hidden;
+});
+
 WebAssembly.instantiateStreaming(fetch("main.wasm"), {
     env: make_env({
         InitWindow: (width, height, text_ptr) => {
@@ -64,7 +70,9 @@ function first(timestamp) {
 function next(timestamp) {
     dt = (timestamp - previous)*0.001;
     previous = timestamp;
-    w.instance.exports.next_frame();
+    if (doUpdate){
+        w.instance.exports.next_frame();
+    }
     window.requestAnimationFrame(next);
 }
 
