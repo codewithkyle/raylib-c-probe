@@ -1,4 +1,16 @@
 #include <raylib.h>
+float floorf(float);
+float fabsf(float);
+double fabs(double);
+float fmaxf(float, float);
+float fminf(float, float);
+float sqrtf(float);
+float atan2f(float, float);
+float cosf(float);
+float sinf(float);
+double tan(double);
+float acosf(float);
+float asinf(float);
 #include <raymath.h>
 
 #define BALL_RADIUS 100.0

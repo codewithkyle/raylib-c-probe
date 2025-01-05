@@ -1,6 +1,12 @@
+/** @type {number} */
 let previous = undefined;
 let w = undefined;
+
+/** @type {CanvasRenderingContext2D} */
 let ctx = undefined;
+
+/** @type {number} */
+let dt = undefined;
 
 WebAssembly.instantiateStreaming(fetch("main.wasm"), {
     env: make_env({
@@ -19,17 +25,30 @@ WebAssembly.instantiateStreaming(fetch("main.wasm"), {
         EndDrawing: ()=>{},
         ClearBackground: (color_ptr)=>{
             const buffer = w.instance.exports.memory.buffer;
-            const rgba = new Uint8Array(buffer, color_ptr, 4);
-            const hex = color_hex_unpacked(...rgba);
+            const hex = color_hex_unpacked(...new Uint8Array(buffer, color_ptr, 4));
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.rect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.fillStyle = hex;
+            ctx.fill();
+        },
+        GetScreenWidth: () => ctx.canvas.width,
+        GetScreenHeight: () => ctx.canvas.height,
+        GetFrameTime: () => dt,
+        DrawCircleV: (center_ptr, radius, color_ptr) => {
+            const buffer = w.instance.exports.memory.buffer;
+            const [x, y] = new Float32Array(buffer, center_ptr, 2);
+            const hex = color_hex_unpacked(...new Uint8Array(buffer, color_ptr, 4));
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2*Math.PI);
+            ctx.fillStyle = hex;
+            ctx.closePath();
             ctx.fill();
         },
     }),
 }).then((wasm) => {
     console.log("WASM instantiated", wasm);
     w = wasm;
+    /** @type {HTMLCanvasElement} */
     const canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
     w.instance.exports.render_init();
@@ -43,10 +62,10 @@ function first(timestamp) {
     window.requestAnimationFrame(next);
 }
 function next(timestamp) {
-    const dt = timestamp - previous;
+    dt = (timestamp - previous)*0.001;
     previous = timestamp;
     w.instance.exports.next_frame();
-    //window.requestAnimationFrame(next);
+    window.requestAnimationFrame(next);
 }
 
 function make_env(...envs) {
