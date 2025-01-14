@@ -15,6 +15,7 @@ jobs:
 
     - name: Run Makefile
       run: |
+        rm .gitignore
         make -b wasm
 
     - name: Deploy to GitHub Pages
